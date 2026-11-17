@@ -415,6 +415,11 @@ blocks.forEach(function (b) {
   wa.target = "_blank";
   wa.rel = "noopener noreferrer";
   foot.appendChild(wa);
+  wa.addEventListener("click", function () {
+    copyText(b.text).then(function (ok) {
+      if (ok) toast("הטקסט הועתק. אם לא הופיע בוואטסאפ, אפשר להדביק");
+    });
+  });
   card.appendChild(foot);
 
   function doCopy() {
