@@ -1,0 +1,423 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#1f7a5c">
+<meta name="color-scheme" content="light dark">
+<title>לוח יורצייט וימי הולדת</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Assistant:wght@400;600;700&family=Frank+Ruhl+Libre:wght@500;700&display=swap">
+<style>
+/* Layout: a responsive grid of month cards; each card is one tap-to-copy block for WhatsApp. */
+:root {
+  --bg: #eef1f4;
+  --surface: #ffffff;
+  --fg: #1c2733;
+  --muted: #5d6b79;
+  --line: #d6dde4;
+  --accent: #1f7a5c;
+  --accent-fg: #ffffff;
+  --accent-soft: #dff1ea;
+  --yz: #6a4c93;
+  --yz-soft: #ece6f4;
+  --bd: #1f6f8b;
+  --bd-soft: #e0eff4;
+  --font-display: "Frank Ruhl Libre", "David Libre", Georgia, serif;
+  --font-body: "Assistant", "Heebo", "Arial Hebrew", Arial, sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #11181f;
+    --surface: #1a232c;
+    --fg: #e6ecf1;
+    --muted: #9aa8b5;
+    --line: #2b3844;
+    --accent: #4cc39a;
+    --accent-fg: #0b1a14;
+    --accent-soft: #1b3a30;
+    --yz: #b99ae0;
+    --yz-soft: #2c2540;
+    --bd: #6cc0dc;
+    --bd-soft: #17333e;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #11181f;
+  --surface: #1a232c;
+  --fg: #e6ecf1;
+  --muted: #9aa8b5;
+  --line: #2b3844;
+  --accent: #4cc39a;
+  --accent-fg: #0b1a14;
+  --accent-soft: #1b3a30;
+  --yz: #b99ae0;
+  --yz-soft: #2c2540;
+  --bd: #6cc0dc;
+  --bd-soft: #17333e;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+img { max-width: 100%; }
+[hidden] { display: none !important; }
+body {
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--font-body);
+  font-size: 16px;
+  line-height: 1.5;
+  direction: rtl;
+  padding-block: 28px 56px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+.wrap { max-width: 1100px; margin: 0 auto; }
+
+header { display: flex; flex-wrap: wrap; align-items: end; justify-content: space-between; gap: 16px; margin-bottom: 24px; }
+h1 {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: clamp(1.7rem, 4vw, 2.4rem);
+  line-height: 1.15;
+  margin: 0 0 6px;
+  text-wrap: balance;
+}
+.sub { margin: 0; color: var(--muted); max-width: 60ch; }
+
+.btn {
+  font: inherit;
+  font-weight: 600;
+  border: 1px solid var(--line);
+  background: var(--surface);
+  color: var(--fg);
+  padding: 9px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.btn:hover { border-color: var(--accent); }
+.btn.primary { background: var(--accent); color: var(--accent-fg); border-color: var(--accent); }
+.btn:focus-visible, .copyarea:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 320px), 1fr));
+  gap: 16px;
+  align-items: start;
+}
+.card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  overflow: hidden;
+  min-width: 0;
+  transition: border-color .15s, box-shadow .15s;
+}
+.card.done { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent-soft); }
+
+.copyarea {
+  display: block;
+  width: 100%;
+  font: inherit;
+  color: inherit;
+  text-align: right;
+  background: none;
+  border: 0;
+  padding: 16px 16px 8px;
+  cursor: pointer;
+}
+.copyarea:hover { background: var(--accent-soft); }
+.mhead { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; margin-bottom: 8px; }
+.mname { font-family: var(--font-display); font-weight: 700; font-size: 1.5rem; }
+.mcount { color: var(--muted); font-size: .85rem; font-variant-numeric: tabular-nums; }
+
+ul { list-style: none; margin: 0; padding: 0; }
+li {
+  display: grid;
+  grid-template-columns: 4.6em 1fr;
+  column-gap: 10px;
+  padding: 7px 0;
+  border-top: 1px solid var(--line);
+  align-items: baseline;
+  min-width: 0;
+}
+.date { font-weight: 700; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.what { min-width: 0; overflow-wrap: anywhere; }
+.tag {
+  display: inline-block;
+  font-size: .75rem;
+  font-weight: 600;
+  padding: 1px 8px;
+  border-radius: 99px;
+  margin-inline-start: 6px;
+  white-space: nowrap;
+}
+.tag.yz { background: var(--yz-soft); color: var(--yz); }
+.tag.bd { background: var(--bd-soft); color: var(--bd); }
+
+.foot {
+  display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px;
+  padding: 10px 16px 14px;
+  border-top: 1px solid var(--line);
+}
+.hint { color: var(--muted); font-size: .85rem; }
+.hint.ok { color: var(--accent); font-weight: 700; }
+.wa { font-size: .9rem; padding: 6px 12px; }
+
+#toast {
+  position: fixed;
+  left: 50%;
+  bottom: calc(24px + env(safe-area-inset-bottom, 0px));
+  transform: translate(-50%, 12px);
+  background: var(--fg);
+  color: var(--bg);
+  padding: 10px 20px;
+  border-radius: 99px;
+  font-weight: 600;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .2s, transform .2s;
+  max-width: calc(100% - 32px);
+}
+#toast.show { opacity: 1; transform: translate(-50%, 0); }
+@media (prefers-reduced-motion: reduce) { .card, #toast { transition: none; } }
+</style>
+
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div>
+      <h1>לוח יורצייט וימי הולדת</h1>
+      <p class="sub">לחיצה על חודש מעתיקה אותו ללוח, מוכן להדבקה בוואטסאפ. אפשר גם לפתוח את וואטסאפ עם הטקסט מוכן.</p>
+    </div>
+    <button class="btn primary" id="copyAll" type="button">העתק את כל השנה</button>
+  </header>
+  <main class="grid" id="grid"></main>
+</div>
+<div id="toast" role="status" aria-live="polite"></div>
+
+<script>
+var RAW = `📅 תשרי
+• ה' תשרי: מנחם מענדל עיזאגווי (יום הולדת)
+• ו' תשרי: יחיאל רוזנצוויג – חיה שרה (יורצייט)
+• י"ח תשרי: שמעון אברהמי – עדנה עזת (יורצייט)
+• כ"ג תשרי: טלי אברהמי – תמר (יורצייט)
+• כ"ו תשרי: מענדי ברוך – ויקטוריה (יורצייט)
+• ל' תשרי: אברהם טולדנו (יום הולדת)
+
+📅 חשוון
+• ד' חשוון: חנניה כהן – חדווה פלורה (יורצייט)
+• ז' חשוון: מנחם מענדל נוטיק – הרב זלמן ניסן פינחס נוטיק (יורצייט)
+• ט' חשוון: שלמה סגל – חיה מירל סגל (יורצייט)
+• י"א חשוון: ישראל אמיתי – שמעון (יורצייט)
+• י"ד חשוון: יהושע מזיא (יום הולדת)
+• ט"ו חשוון: מאיר מאירי – שולמית (יורצייט)
+• כ"ג חשוון: ללא תורם – שמואל שניאור זלמן (יורצייט)
+
+📅 כסלו
+• ה' כסלו: מנחם מנדל אופנר – הדסה (יורצייט)
+• ו' כסלו: מענדי ברוך (יום הולדת)
+• ח' כסלו: יחיאל רוזנצוויג – אברהם (יורצייט)
+• ח' כסלו: יעקב גביר (יום הולדת)
+• י"ב כסלו: לוי משי זהב – צבי (יורצייט)
+• י"ד כסלו: משה סבן (יום הולדת)
+• י"ד כסלו: יערי פז-אשד (יום הולדת)
+• כ' כסלו: יוסף חיים אדרעי (יום הולדת)
+• כ"ו כסלו: ישראל נח בליניצקי (יום הולדת)
+
+📅 טבת
+• ב' טבת: בכור – יוסף חיים (יורצייט)
+• ד' טבת: זאב פלדפיקס (יום הולדת)
+• י"ב טבת: מאיר מאירי – אסתר הינדא (יורצייט)
+• י"ג טבת: שניאור זלמן יעקב מאמו (יום הולדת)
+• י"ד טבת: עמרם וסימונה לחיאני – ר' אברהם (יורצייט)
+• כ"ז טבת: משה ראובן שלום הרפז (יום הולדת)
+
+📅 שבט
+• ח' שבט: שמעון גבאי – סימי (יורצייט)
+• י' שבט: צחור יצחק לוי (יום הולדת)
+• י"ד שבט: עמרם וסימונה לחיאני – פירחה לחיאני ע"ה (יורצייט)
+• כ"ג שבט: חנה מאירי – צבי הירש (יורצייט)
+• כ"ג שבט: מנחם מענדל נוטיק (יום הולדת)
+• כ"ו שבט: דוד סימנטוב (יום הולדת)
+• כ"ט שבט: משפחות מגידיש ולוי – ר' ישועה יוסף יהושע (יורצייט)
+
+📅 אדר (כולל אדר א' וב')
+• ד' אדר: שלמה סגל (יום הולדת)
+• ד' אדר א': אברהם כהן – אילה (יורצייט)
+• י"ג אדר: מנחם מנדל קניג (יום הולדת)
+• י"ז אדר: שי שטנר (יום הולדת)
+• י"ח אדר א': דב אברהם איש בית – ישראל חיים (יורצייט)
+• כ"א אדר: שמעון אברהמי – יחזקאל אברהמי (יורצייט)
+• כ"ד אדר: דוד צפריר וולפוב (יום הולדת)
+• כ"ה אדר: אברהם געצל רוזנצוויג (יום הולדת)
+• כ"ח אדר: ללא תורם – אסתר בן זקן (יורצייט)
+• ג' אדר ב': בנו שלמה ממן – יהודה חיים שמחה (יורצייט)
+
+📅 ניסן
+• ח' ניסן: ללא תורם – מאיר מרדכי (יורצייט)
+• י' ניסן: מאיר פריימן (יום הולדת)
+• י"ט ניסן: מאיר מאירי – חיים אליעזר (יורצייט)
+• כ"ט ניסן: מנדי ברוך – יצחק (יורצייט)
+
+📅 אייר
+• א' אייר: ישראל שמעיה – אריה חיים (יורצייט)
+• ד' אייר: יחיאל רוזנצוויג – הינדע גיטל (יורצייט)
+• ד' אייר: מנחם מענדל קעניג – אלעזר מרדכי (יורצייט)
+• ה' אייר: מנחם מענדל קעניג – דוד אלכסנדר זושא (יורצייט)
+• ח' אייר: דוד כ"ץ (יום הולדת)
+• י"ב אייר: טלי אברהמי – זקלין חיה (יורצייט)
+• י"ג אייר: יצחק מלכא – יהודה ז"ל (יורצייט)
+• ט"ז אייר: שמעון אברהמי (יום הולדת)
+• כ"ד אייר: גיורא לוי – דוד (יורצייט)
+• כ"ז אייר: גיורא לוי – רחל מרים (יורצייט)
+
+📅 סיוון
+• א' סיוון: יוסף לוין (יום הולדת)
+• ט"ז סיוון: חנניה כהן (יום הולדת)
+• ט"ז סיוון: יצחק מלכא (יום הולדת)
+• י"ח סיוון: ישראל אברהם אמיתי (יום הולדת)
+• ל' סיוון: אליעזר בוטבול (יום הולדת)
+
+📅 תמוז
+• א' תמוז: רפאל שמעיה – רבקה ביילא (יורצייט)
+• ו' תמוז: שבתי איתן (יום הולדת)
+• י"ז תמוז: גב' חנה דיין – ברוך הכהן אייזנברג (יורצייט)
+• כ"ב תמוז: יחיאל אביש רוזנצווייג (יום הולדת)
+
+📅 אב
+• ה' אב: מאיר מאירי (יום הולדת)
+• י"ג אב: מענדי ברוך – מיכלה (יורצייט)
+• י"ג אב: שניאור אודרמן (יום הולדת)
+• י"ג אב: לוי מיודובניק (יום הולדת)
+
+📅 אלול
+• ד' אלול: יוסף אורי ונונו – שמואל (יורצייט)
+• ה' אלול: בת אל אברהמי – ציון בן יעיש אבוחצירא ע"ה (יורצייט)
+• ח' אלול: שמעון גבאי – רפאל (יורצייט)
+• ט' אלול: גב' חנה דיין – ברכה רחל אייזנברג (יורצייט)
+• ט"ז אלול: דב אברהם איש בית – אביבה (יורצייט)
+• כ"ג אלול: לוי משי זהב (יום הולדת)
+• כ"ט אלול: מנחם מענדל קורנט (יום הולדת)`;
+
+var blocks = RAW.split(/\n\s*\n/).map(function (b) {
+  var lines = b.trim().split("\n");
+  return { title: lines[0].replace("📅", "").trim(), lines: lines.slice(1), text: b.trim() };
+});
+
+var toastEl = document.getElementById("toast");
+var toastTimer;
+function toast(msg) {
+  toastEl.textContent = msg;
+  toastEl.classList.add("show");
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(function () { toastEl.classList.remove("show"); }, 1800);
+}
+
+function fallbackCopy(text) {
+  var ta = document.createElement("textarea");
+  ta.value = text;
+  ta.setAttribute("readonly", "");
+  ta.style.position = "fixed";
+  ta.style.opacity = "0";
+  document.body.appendChild(ta);
+  ta.select();
+  var ok = false;
+  try { ok = document.execCommand("copy"); } catch (e) { ok = false; }
+  document.body.removeChild(ta);
+  return ok;
+}
+
+function copyText(text) {
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    return navigator.clipboard.writeText(text).then(function () { return true; }, function () { return fallbackCopy(text); });
+  }
+  return Promise.resolve(fallbackCopy(text));
+}
+
+function mk(tag, cls, text) {
+  var el = document.createElement(tag);
+  if (cls) el.className = cls;
+  if (text != null) el.textContent = text;
+  return el;
+}
+
+var grid = document.getElementById("grid");
+blocks.forEach(function (b) {
+  var card = mk("article", "card");
+
+  var btn = mk("button", "copyarea");
+  btn.type = "button";
+  btn.setAttribute("aria-label", "העתק את חודש " + b.title);
+
+  var head = mk("div", "mhead");
+  head.appendChild(mk("span", "mname", b.title));
+  head.appendChild(mk("span", "mcount", b.lines.length + " רשומות"));
+  btn.appendChild(head);
+
+  var ul = mk("ul");
+  b.lines.forEach(function (ln) {
+    var clean = ln.replace(/^•\s*/, "");
+    var idx = clean.indexOf(":");
+    var date = clean.slice(0, idx);
+    var rest = clean.slice(idx + 1).trim();
+    var m = rest.match(/\((יום הולדת|יורצייט)\)\s*$/);
+    var kind = m ? m[1] : "";
+    var name = m ? rest.slice(0, m.index).trim() : rest;
+    var li = mk("li");
+    li.appendChild(mk("span", "date", date));
+    var what = mk("span", "what", name);
+    if (kind) what.appendChild(mk("span", "tag " + (kind === "יורצייט" ? "yz" : "bd"), kind));
+    li.appendChild(what);
+    ul.appendChild(li);
+  });
+  btn.appendChild(ul);
+  card.appendChild(btn);
+
+  var foot = mk("div", "foot");
+  var hint = mk("span", "hint", "לחיצה על הכרטיס מעתיקה");
+  foot.appendChild(hint);
+  var wa = mk("a", "btn wa", "פתח בוואטסאפ");
+  wa.href = "https://wa.me/?text=" + encodeURIComponent(b.text);
+  wa.target = "_blank";
+  wa.rel = "noopener noreferrer";
+  foot.appendChild(wa);
+  card.appendChild(foot);
+
+  btn.addEventListener("click", function () {
+    copyText(b.text).then(function (ok) {
+      if (ok) {
+        card.classList.add("done");
+        hint.textContent = "הועתק ✓";
+        hint.classList.add("ok");
+        toast("חודש " + b.title + " הועתק");
+        setTimeout(function () {
+          card.classList.remove("done");
+          hint.textContent = "לחיצה על הכרטיס מעתיקה";
+          hint.classList.remove("ok");
+        }, 2500);
+      } else {
+        toast("ההעתקה נחסמה, אפשר לסמן ולהעתיק ידנית");
+      }
+    });
+  });
+
+  grid.appendChild(card);
+});
+
+document.getElementById("copyAll").addEventListener("click", function () {
+  copyText(RAW).then(function (ok) {
+    toast(ok ? "כל השנה הועתקה" : "ההעתקה נחסמה בדפדפן זה");
+  });
+});
+</script>
+</body>
+</html>
