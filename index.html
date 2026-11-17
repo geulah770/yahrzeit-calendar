@@ -367,6 +367,16 @@ function copyText(text) {
   return Promise.resolve(fallbackCopy(text));
 }
 
+function openWa(url) {
+  var a = document.createElement("a");
+  a.href = url;
+  a.target = "_blank";
+  a.rel = "noopener noreferrer";
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+}
+
 function mk(tag, cls, text) {
   var el = document.createElement(tag);
   if (cls) el.className = cls;
@@ -410,15 +420,22 @@ blocks.forEach(function (b) {
   var cp = mk("button", "btn cp", "העתק");
   cp.type = "button";
   foot.appendChild(cp);
-  var wa = mk("a", "btn wa", "שלח בוואטסאפ");
-  wa.href = "https://wa.me/?text=" + encodeURIComponent(b.text);
-  wa.target = "_blank";
-  wa.rel = "noopener noreferrer";
+  var waUrl = "https://wa.me/?text=" + encodeURIComponent(b.text);
+  var wa = mk("button", "btn wa", "שלח בוואטסאפ");
+  wa.type = "button";
   foot.appendChild(wa);
   wa.addEventListener("click", function () {
     copyText(b.text).then(function (ok) {
       if (ok) toast("הטקסט הועתק. אם לא הופיע בוואטסאפ, אפשר להדביק");
     });
+    var touch = window.matchMedia && window.matchMedia("(pointer: coarse)").matches;
+    if (touch && navigator.share) {
+      navigator.share({ text: b.text }).catch(function (e) {
+        if (!e || e.name !== "AbortError") openWa(waUrl);
+      });
+    } else {
+      openWa(waUrl);
+    }
   });
   card.appendChild(foot);
 
