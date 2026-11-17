@@ -183,15 +183,17 @@ li:first-child { border-top: 0; }
 .tag.bd { background: var(--bd-soft); color: var(--bd); }
 
 .foot {
-  display: flex; align-items: center; justify-content: space-between; gap: 8px;
-  min-height: 56px;
-  padding: 8px 16px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  padding: 10px 12px;
   border-top: 1px solid var(--line);
   background: var(--surface-2);
 }
-.hint { color: var(--muted); font-size: .85rem; }
-.hint.ok { color: var(--accent); font-weight: 700; }
-.wa { font-size: .9rem; min-height: 36px; padding: 0 14px; background: var(--surface); flex: none; }
+.foot .btn { width: 100%; min-height: 44px; font-size: .95rem; padding: 0 10px; }
+.btn.cp { background: var(--surface); }
+.btn.wa { background: #25d366; border-color: #25d366; color: #06240f; }
+.btn.wa:hover { filter: brightness(1.06); border-color: #25d366; }
 
 #toast {
   position: fixed;
@@ -405,32 +407,33 @@ blocks.forEach(function (b) {
   card.appendChild(btn);
 
   var foot = mk("div", "foot");
-  var hint = mk("span", "hint", "לחיצה על הכרטיס מעתיקה");
-  foot.appendChild(hint);
-  var wa = mk("a", "btn wa", "פתח בוואטסאפ");
+  var cp = mk("button", "btn cp", "העתק");
+  cp.type = "button";
+  foot.appendChild(cp);
+  var wa = mk("a", "btn wa", "שלח בוואטסאפ");
   wa.href = "https://wa.me/?text=" + encodeURIComponent(b.text);
   wa.target = "_blank";
   wa.rel = "noopener noreferrer";
   foot.appendChild(wa);
   card.appendChild(foot);
 
-  btn.addEventListener("click", function () {
+  function doCopy() {
     copyText(b.text).then(function (ok) {
       if (ok) {
         card.classList.add("done");
-        hint.textContent = "הועתק ✓";
-        hint.classList.add("ok");
+        cp.textContent = "הועתק ✓";
         toast("חודש " + b.title + " הועתק");
         setTimeout(function () {
           card.classList.remove("done");
-          hint.textContent = "לחיצה על הכרטיס מעתיקה";
-          hint.classList.remove("ok");
+          cp.textContent = "העתק";
         }, 2500);
       } else {
         toast("ההעתקה נחסמה, אפשר לסמן ולהעתיק ידנית");
       }
     });
-  });
+  }
+  btn.addEventListener("click", doCopy);
+  cp.addEventListener("click", doCopy);
 
   grid.appendChild(card);
 });
