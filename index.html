@@ -3,17 +3,55 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#1f7a5c">
-<meta name="color-scheme" content="light dark">
+<meta name="theme-color" content="#0e1319">
+<meta name="color-scheme" content="dark light">
 <title>לוח יורצייט וימי הולדת</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Assistant:wght@400;600;700&family=Frank+Ruhl+Libre:wght@500;700&display=swap">
 <style>
-/* Layout: a responsive grid of month cards; each card is one tap-to-copy block for WhatsApp. */
+/* Layout: uniform grid of equal-height month cards on a dark canvas; one tap per card copies it for WhatsApp. */
 :root {
+  color-scheme: dark;
+  --bg: #0e1319;
+  --surface: #151c24;
+  --surface-2: #1b2531;
+  --fg: #e8edf2;
+  --muted: #93a1af;
+  --line: #243040;
+  --accent: #3fb68b;
+  --accent-fg: #07150f;
+  --accent-soft: #15302a;
+  --yz: #c4aaf0;
+  --yz-soft: #2a2140;
+  --bd: #7fc9e2;
+  --bd-soft: #14303b;
+  --font-display: "Frank Ruhl Libre", "David Libre", Georgia, serif;
+  --font-body: "Assistant", "Heebo", "Arial Hebrew", Arial, sans-serif;
+}
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme="dark"]) {
+    color-scheme: light;
+    --bg: #eef1f4;
+    --surface: #ffffff;
+    --surface-2: #f3f6f8;
+    --fg: #1c2733;
+    --muted: #5d6b79;
+    --line: #d6dde4;
+    --accent: #1f7a5c;
+    --accent-fg: #ffffff;
+    --accent-soft: #dff1ea;
+    --yz: #6a4c93;
+    --yz-soft: #ece6f4;
+    --bd: #1f6f8b;
+    --bd-soft: #e0eff4;
+  }
+}
+:root[data-theme="light"] {
+  color-scheme: light;
   --bg: #eef1f4;
   --surface: #ffffff;
+  --surface-2: #f3f6f8;
   --fg: #1c2733;
   --muted: #5d6b79;
   --line: #d6dde4;
@@ -24,40 +62,6 @@
   --yz-soft: #ece6f4;
   --bd: #1f6f8b;
   --bd-soft: #e0eff4;
-  --font-display: "Frank Ruhl Libre", "David Libre", Georgia, serif;
-  --font-body: "Assistant", "Heebo", "Arial Hebrew", Arial, sans-serif;
-}
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) {
-    --bg: #11181f;
-    --surface: #1a232c;
-    --fg: #e6ecf1;
-    --muted: #9aa8b5;
-    --line: #2b3844;
-    --accent: #4cc39a;
-    --accent-fg: #0b1a14;
-    --accent-soft: #1b3a30;
-    --yz: #b99ae0;
-    --yz-soft: #2c2540;
-    --bd: #6cc0dc;
-    --bd-soft: #17333e;
-    color-scheme: dark;
-  }
-}
-:root[data-theme="dark"] {
-  --bg: #11181f;
-  --surface: #1a232c;
-  --fg: #e6ecf1;
-  --muted: #9aa8b5;
-  --line: #2b3844;
-  --accent: #4cc39a;
-  --accent-fg: #0b1a14;
-  --accent-soft: #1b3a30;
-  --yz: #b99ae0;
-  --yz-soft: #2c2540;
-  --bd: #6cc0dc;
-  --bd-soft: #17333e;
-  color-scheme: dark;
 }
 
 * { box-sizing: border-box; }
@@ -77,11 +81,11 @@ body {
 }
 .wrap { max-width: 1100px; margin: 0 auto; }
 
-header { display: flex; flex-wrap: wrap; align-items: end; justify-content: space-between; gap: 16px; margin-bottom: 24px; }
+header { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 24px; }
 h1 {
   font-family: var(--font-display);
   font-weight: 700;
-  font-size: clamp(1.7rem, 4vw, 2.4rem);
+  font-size: clamp(1.7rem, 4vw, 2.3rem);
   line-height: 1.15;
   margin: 0 0 6px;
   text-wrap: balance;
@@ -91,28 +95,35 @@ h1 {
 .btn {
   font: inherit;
   font-weight: 600;
+  line-height: 1.2;
   border: 1px solid var(--line);
-  background: var(--surface);
+  background: var(--surface-2);
   color: var(--fg);
-  padding: 9px 16px;
+  min-height: 40px;
+  padding: 0 16px;
   border-radius: 8px;
   cursor: pointer;
   text-decoration: none;
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 6px;
+  transition: border-color .15s, background .15s;
 }
 .btn:hover { border-color: var(--accent); }
 .btn.primary { background: var(--accent); color: var(--accent-fg); border-color: var(--accent); }
+.btn.primary:hover { filter: brightness(1.08); }
 .btn:focus-visible, .copyarea:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
 
 .grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(min(100%, 320px), 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr));
   gap: 16px;
-  align-items: start;
+  align-items: stretch;
 }
 .card {
+  display: flex;
+  flex-direction: column;
   background: var(--surface);
   border: 1px solid var(--line);
   border-radius: 10px;
@@ -124,37 +135,46 @@ h1 {
 
 .copyarea {
   display: block;
+  flex: 1 1 auto;
   width: 100%;
   font: inherit;
   color: inherit;
   text-align: right;
   background: none;
   border: 0;
-  padding: 16px 16px 8px;
+  padding: 16px 16px 10px;
   cursor: pointer;
+  transition: background .15s;
 }
-.copyarea:hover { background: var(--accent-soft); }
-.mhead { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; margin-bottom: 8px; }
-.mname { font-family: var(--font-display); font-weight: 700; font-size: 1.5rem; }
-.mcount { color: var(--muted); font-size: .85rem; font-variant-numeric: tabular-nums; }
+.copyarea:hover { background: var(--surface-2); }
+.mhead {
+  display: flex; align-items: baseline; justify-content: space-between; gap: 8px;
+  padding-bottom: 10px;
+  margin-bottom: 2px;
+  border-bottom: 2px solid var(--accent);
+}
+.mname { font-family: var(--font-display); font-weight: 700; font-size: 1.5rem; line-height: 1.2; }
+.mcount { color: var(--muted); font-size: .85rem; font-variant-numeric: tabular-nums; white-space: nowrap; }
 
 ul { list-style: none; margin: 0; padding: 0; }
 li {
   display: grid;
-  grid-template-columns: 4.6em 1fr;
-  column-gap: 10px;
-  padding: 7px 0;
+  grid-template-columns: 5.6em 1fr;
+  column-gap: 12px;
+  padding: 8px 0;
   border-top: 1px solid var(--line);
   align-items: baseline;
   min-width: 0;
 }
-.date { font-weight: 700; white-space: nowrap; font-variant-numeric: tabular-nums; }
+li:first-child { border-top: 0; }
+.date { font-weight: 700; color: var(--accent); white-space: nowrap; font-variant-numeric: tabular-nums; }
 .what { min-width: 0; overflow-wrap: anywhere; }
 .tag {
   display: inline-block;
-  font-size: .75rem;
+  font-size: .72rem;
   font-weight: 600;
-  padding: 1px 8px;
+  line-height: 1.5;
+  padding: 0 8px;
   border-radius: 99px;
   margin-inline-start: 6px;
   white-space: nowrap;
@@ -163,31 +183,33 @@ li {
 .tag.bd { background: var(--bd-soft); color: var(--bd); }
 
 .foot {
-  display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px;
-  padding: 10px 16px 14px;
+  display: flex; align-items: center; justify-content: space-between; gap: 8px;
+  min-height: 56px;
+  padding: 8px 16px;
   border-top: 1px solid var(--line);
+  background: var(--surface-2);
 }
 .hint { color: var(--muted); font-size: .85rem; }
 .hint.ok { color: var(--accent); font-weight: 700; }
-.wa { font-size: .9rem; padding: 6px 12px; }
+.wa { font-size: .9rem; min-height: 36px; padding: 0 14px; background: var(--surface); flex: none; }
 
 #toast {
   position: fixed;
   left: 50%;
   bottom: calc(24px + env(safe-area-inset-bottom, 0px));
   transform: translate(-50%, 12px);
-  background: var(--fg);
-  color: var(--bg);
+  background: var(--accent);
+  color: var(--accent-fg);
   padding: 10px 20px;
   border-radius: 99px;
-  font-weight: 600;
+  font-weight: 700;
   opacity: 0;
   pointer-events: none;
   transition: opacity .2s, transform .2s;
   max-width: calc(100% - 32px);
 }
 #toast.show { opacity: 1; transform: translate(-50%, 0); }
-@media (prefers-reduced-motion: reduce) { .card, #toast { transition: none; } }
+@media (prefers-reduced-motion: reduce) { .card, .btn, .copyarea, #toast { transition: none; } }
 </style>
 
 </head>
