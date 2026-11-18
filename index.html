@@ -113,7 +113,7 @@ h1 {
 .btn:hover { border-color: var(--accent); }
 .btn.primary { background: var(--accent); color: var(--accent-fg); border-color: var(--accent); }
 .btn.primary:hover { filter: brightness(1.08); }
-.btn:focus-visible, .copyarea:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+.btn:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
 
 .grid {
   display: grid;
@@ -143,10 +143,7 @@ h1 {
   background: none;
   border: 0;
   padding: 16px 16px 10px;
-  cursor: pointer;
-  transition: background .15s;
 }
-.copyarea:hover { background: var(--surface-2); }
 .mhead {
   display: flex; align-items: baseline; justify-content: space-between; gap: 8px;
   padding-bottom: 10px;
@@ -167,6 +164,9 @@ li {
   min-width: 0;
 }
 li:first-child { border-top: 0; }
+li.row { cursor: pointer; transition: background .15s; }
+li.row:hover { background: var(--surface-2); }
+li.row:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
 .date { font-weight: 700; color: var(--accent); white-space: nowrap; font-variant-numeric: tabular-nums; }
 .what { min-width: 0; overflow-wrap: anywhere; }
 .tag {
@@ -195,7 +195,43 @@ li:first-child { border-top: 0; }
 .btn.wa { background: #25d366; border-color: #25d366; color: #06240f; }
 .btn.wa:hover { filter: brightness(1.06); border-color: #25d366; }
 
+#sheet {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  background: rgba(4, 8, 12, .6);
+}
+.panel {
+  width: 100%;
+  max-width: 480px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-bottom: 0;
+  border-radius: 14px 14px 0 0;
+  padding: 18px 16px calc(16px + env(safe-area-inset-bottom, 0px));
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  display: grid;
+  gap: 14px;
+}
+.panel .quote {
+  margin: 0;
+  padding: 12px 14px;
+  background: var(--surface-2);
+  border-radius: 8px;
+  border-inline-start: 3px solid var(--accent);
+  font-size: 1.05rem;
+  overflow-wrap: anywhere;
+}
+.panel .acts { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.panel .acts .btn { min-height: 48px; font-size: 1rem; }
+.panel .close { grid-column: 1 / -1; background: none; color: var(--muted); }
+@media (min-width: 600px) { #sheet { align-items: center; } .panel { border-bottom: 1px solid var(--line); border-radius: 14px; } }
 #toast {
+  z-index: 50;
   position: fixed;
   left: 50%;
   bottom: calc(24px + env(safe-area-inset-bottom, 0px));
@@ -220,13 +256,23 @@ li:first-child { border-top: 0; }
   <header>
     <div>
       <h1>לוח יורצייט וימי הולדת</h1>
-      <p class="sub">לחיצה על חודש מעתיקה אותו ללוח, מוכן להדבקה בוואטסאפ. אפשר גם לפתוח את וואטסאפ עם הטקסט מוכן.</p>
+      <p class="sub">לחיצה על שורה פותחת שליחה של השורה הזאת בוואטסאפ, ואז בוחרים את איש הקשר. בתחתית כל חודש אפשר להעתיק או לשלוח את החודש כולו.</p>
     </div>
     <button class="btn primary" id="copyAll" type="button">העתק את כל השנה</button>
   </header>
   <main class="grid" id="grid"></main>
 </div>
 <div id="toast" role="status" aria-live="polite"></div>
+<div id="sheet" hidden>
+  <div class="panel" role="dialog" aria-modal="true" aria-label="שליחת שורה">
+    <p class="quote" id="sheetText"></p>
+    <div class="acts">
+      <button class="btn wa" id="sheetWa" type="button">שלח בוואטסאפ</button>
+      <button class="btn cp" id="sheetCp" type="button">העתק</button>
+      <button class="btn close" id="sheetClose" type="button">סגור</button>
+    </div>
+  </div>
+</div>
 
 <script>
 var RAW = `📅 תשרי
@@ -377,6 +423,45 @@ function openWa(url) {
   document.body.removeChild(a);
 }
 
+function shareWa(text) {
+  copyText(text).then(function (ok) {
+    if (ok) toast("הטקסט הועתק. אם לא הופיע בוואטסאפ, אפשר להדביק");
+  });
+  var url = "https://wa.me/?text=" + encodeURIComponent(text);
+  var touch = window.matchMedia && window.matchMedia("(pointer: coarse)").matches;
+  if (touch && navigator.share) {
+    navigator.share({ text: text }).catch(function (e) {
+      if (!e || e.name !== "AbortError") openWa(url);
+    });
+  } else {
+    openWa(url);
+  }
+}
+
+var sheet = document.getElementById("sheet");
+var sheetText = document.getElementById("sheetText");
+var sheetCur = "";
+function openSheet(text) {
+  sheetCur = text;
+  sheetText.textContent = text;
+  sheet.hidden = false;
+  document.getElementById("sheetWa").focus();
+}
+function closeSheet() { sheet.hidden = true; }
+document.getElementById("sheetWa").addEventListener("click", function () {
+  shareWa(sheetCur);
+  closeSheet();
+});
+document.getElementById("sheetCp").addEventListener("click", function () {
+  copyText(sheetCur).then(function (ok) {
+    toast(ok ? "השורה הועתקה" : "ההעתקה נחסמה, אפשר לסמן ולהעתיק ידנית");
+  });
+  closeSheet();
+});
+document.getElementById("sheetClose").addEventListener("click", closeSheet);
+sheet.addEventListener("click", function (e) { if (e.target === sheet) closeSheet(); });
+document.addEventListener("keydown", function (e) { if (e.key === "Escape") closeSheet(); });
+
 function mk(tag, cls, text) {
   var el = document.createElement(tag);
   if (cls) el.className = cls;
@@ -388,9 +473,7 @@ var grid = document.getElementById("grid");
 blocks.forEach(function (b) {
   var card = mk("article", "card");
 
-  var btn = mk("button", "copyarea");
-  btn.type = "button";
-  btn.setAttribute("aria-label", "העתק את חודש " + b.title);
+  var btn = mk("div", "copyarea");
 
   var head = mk("div", "mhead");
   head.appendChild(mk("span", "mname", b.title));
@@ -406,7 +489,14 @@ blocks.forEach(function (b) {
     var m = rest.match(/\((יום הולדת|יורצייט)\)\s*$/);
     var kind = m ? m[1] : "";
     var name = m ? rest.slice(0, m.index).trim() : rest;
-    var li = mk("li");
+    var li = mk("li", "row");
+    li.tabIndex = 0;
+    li.setAttribute("role", "button");
+    li.setAttribute("aria-label", "שליחת השורה: " + clean);
+    li.addEventListener("click", function () { openSheet(clean); });
+    li.addEventListener("keydown", function (e) {
+      if (e.key === "Enter" || e.key === " ") { e.preventDefault(); openSheet(clean); }
+    });
     li.appendChild(mk("span", "date", date));
     var what = mk("span", "what", name);
     if (kind) what.appendChild(mk("span", "tag " + (kind === "יורצייט" ? "yz" : "bd"), kind));
@@ -420,23 +510,10 @@ blocks.forEach(function (b) {
   var cp = mk("button", "btn cp", "העתק");
   cp.type = "button";
   foot.appendChild(cp);
-  var waUrl = "https://wa.me/?text=" + encodeURIComponent(b.text);
   var wa = mk("button", "btn wa", "שלח בוואטסאפ");
   wa.type = "button";
   foot.appendChild(wa);
-  wa.addEventListener("click", function () {
-    copyText(b.text).then(function (ok) {
-      if (ok) toast("הטקסט הועתק. אם לא הופיע בוואטסאפ, אפשר להדביק");
-    });
-    var touch = window.matchMedia && window.matchMedia("(pointer: coarse)").matches;
-    if (touch && navigator.share) {
-      navigator.share({ text: b.text }).catch(function (e) {
-        if (!e || e.name !== "AbortError") openWa(waUrl);
-      });
-    } else {
-      openWa(waUrl);
-    }
-  });
+  wa.addEventListener("click", function () { shareWa(b.text); });
   card.appendChild(foot);
 
   function doCopy() {
@@ -454,7 +531,6 @@ blocks.forEach(function (b) {
       }
     });
   }
-  btn.addEventListener("click", doCopy);
   cp.addEventListener("click", doCopy);
 
   grid.appendChild(card);
